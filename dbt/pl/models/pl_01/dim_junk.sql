@@ -31,8 +31,7 @@ with features as
     from stg_01.car c
     left join stg_01.features f on f.car_id = c.car_id
     left join stg_01.engine e on c.engine_id = e.engine_id
-    left join stg_01.fuel_engine fe on fe.engine_id = e.engine_id
-    left join stg_01.fuel fu on fu.fuel_id = fe.fuel_id
+    left join stg_01.fuel fu on fu.fuel_id = c.fuel_id
     left join stg_01.transmission t on t.transmission_id = c.transmission_id
     left join stg_01.drivetrain d on d.drivetrain_id = c.drivetrain_id
 ),
