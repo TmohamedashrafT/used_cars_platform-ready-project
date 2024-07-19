@@ -15,13 +15,16 @@ with car as (
     c.transmission_id,
     COALESCE(t.transmission, 'unknown') as transmission,
     COALESCE(c.min_mpg, -1) as min_mpg,
-    COALESCE(c.max_mpg, -1) as max_mpg
+    COALESCE(c.max_mpg, -1) as max_mpg,
+    c.fuel_id,
+    COALESCE(f.fuel_type, 'unknown') as fuel_type
 
    from   `ready-data-de24.stg_01.car` c
    left join stg_01.model m on m.model_id = c.model_id
    left join stg_01.brand b on b.brand_id = m.brand_id
    left join stg_01.transmission t on t.transmission_id = c.transmission_id
-   left join stg_01.engine e on e.engine_id = c.engine_id  
+   left join stg_01.engine e on e.engine_id = c.engine_id 
+   left join stg_01.fuel f on f.fuel_id = c.fuel_id 
     where not exists(
     select 1 
     from pl_01.dim_car ex

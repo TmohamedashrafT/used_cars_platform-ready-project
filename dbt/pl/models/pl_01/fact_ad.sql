@@ -18,7 +18,8 @@ left join {{ ref('dim_car')}} dc
     COALESCE(c.max_mpg, -1) = dc.max_mpg and 
     dc.model_id = c.model_id and
     dc.transmission_id = c.transmission_id and  
-    dc.engine_id = c.engine_id
+    dc.engine_id = c.engine_id and 
+    dc.fuel_id = c.fuel_id
 left join {{ ref('dim_color')}} idc
     on idc.color_id = c.interior_color_id 
 left join {{ ref('dim_color') }} xdc
@@ -54,7 +55,6 @@ left join {{ ref('dim_junk')}} dj
      dj.usb_port = COALESCE(f.usb_port, 'unknown') and 
      dj.heated_seats = COALESCE(f.heated_seats, 'unknown') and 
      dj.drivetrain = COALESCE(dr.drivetrain, 'unknown') and
-     dj.fuel_type = COALESCE(fu.fuel_type, 'unknown') and
      dj.automatic_transmission = COALESCE(tr.automatic_transmission, -1)
     
 )

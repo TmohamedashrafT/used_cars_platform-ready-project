@@ -6,7 +6,6 @@ with features as
     select distinct 
     COALESCE(t.automatic_transmission, -1) as automatic_transmission,
     COALESCE(d.drivetrain, 'unknown') as drivetrain,
-    COALESCE(fu.fuel_type, 'unknown') as fuel_type,
     COALESCE(f.damaged , 'unknown') as damaged ,
     COALESCE(f.first_owner , 'unknown') as first_owner ,
     COALESCE(f.personal_using, 'unknown') as personal_using,
@@ -30,8 +29,6 @@ with features as
     COALESCE(f.heated_seats , 'unknown') as heated_seats
     from stg_01.car c
     left join stg_01.features f on f.car_id = c.car_id
-    left join stg_01.engine e on c.engine_id = e.engine_id
-    left join stg_01.fuel fu on fu.fuel_id = c.fuel_id
     left join stg_01.transmission t on t.transmission_id = c.transmission_id
     left join stg_01.drivetrain d on d.drivetrain_id = c.drivetrain_id
 ),
@@ -46,7 +43,6 @@ dim_junk as
         from pl_01.dim_junk jd
         where jd.automatic_transmission = COALESCE(f.automatic_transmission, -1)
           and jd.drivetrain = COALESCE(f.drivetrain, 'unknown')
-          and jd.fuel_type = COALESCE(f.fuel_type, 'unknown')
           and jd.damaged = COALESCE(f.damaged, 'unknown')
           and jd.first_owner = COALESCE(f.first_owner, 'unknown')
           and jd.personal_using = COALESCE(f.personal_using, 'unknown')
