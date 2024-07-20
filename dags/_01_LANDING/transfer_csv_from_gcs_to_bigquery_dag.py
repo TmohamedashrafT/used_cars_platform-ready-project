@@ -3,17 +3,15 @@ from airflow import DAG
 from airflow.operators.empty import EmptyOperator
 from airflow.providers.google.cloud.transfers.gcs_to_bigquery import GCSToBigQueryOperator
 
-extract_load_csv_dag = DAG(
-    dag_id="transfer_csv_from_gcs_to_bigquery",
-    schedule="@daily",
-    start_date=datetime(2024, 7, 5),
-    catchup=False,
-)
-
-start_task = EmptyOperator(task_id="empty_start_task", dag = extract_load_csv_dag)
+# Define constants for BigQuery and GCS
+BQ_PROJECT_ID = 'ready-data-engineering-p24'
+BQ_LANDING_DATASET_NAME = 'landing_01'
+GCS_BUCKET = 'ready-project-dataset'
+FILENAME = 'cars-com_dataset/*.csv'
+TABLE_NAME = 'gcs_used_cars'
 
 # Schema definition for the destination table
-schema_fields = [
+gcs_used_cars_schema_fields = [
     {'name': 'brand', 'type': 'STRING', 'mode': 'NULLABLE'},
     {'name': 'model', 'type': 'STRING', 'mode': 'NULLABLE'},
     {'name': 'year', 'type': 'FLOAT', 'mode': 'NULLABLE'},
@@ -37,35 +35,48 @@ schema_fields = [
     {'name': 'backup_camera', 'type': 'FLOAT', 'mode': 'NULLABLE'},
     {'name': 'keyless_start', 'type': 'FLOAT', 'mode': 'NULLABLE'},
     {'name': 'remote_start', 'type': 'FLOAT', 'mode': 'NULLABLE'},
-    {'name': 'sunroof_or_moonroof', 'type': 'FLOAT', 'mode': 'NULLABLE'},  # Renamed field
+    {'name': 'sunroof_or_moonroof', 'type': 'FLOAT', 'mode': 'NULLABLE'},
     {'name': 'automatic_emergency_braking', 'type': 'FLOAT', 'mode': 'NULLABLE'},
     {'name': 'stability_control', 'type': 'FLOAT', 'mode': 'NULLABLE'},
     {'name': 'leather_seats', 'type': 'FLOAT', 'mode': 'NULLABLE'},
     {'name': 'memory_seat', 'type': 'FLOAT', 'mode': 'NULLABLE'},
     {'name': 'third_row_seating', 'type': 'FLOAT', 'mode': 'NULLABLE'},
-    {'name': 'apple_car_play_or_android_auto', 'type': 'FLOAT', 'mode': 'NULLABLE'},  # Renamed field
+    {'name': 'apple_car_play_or_android_auto', 'type': 'FLOAT', 'mode': 'NULLABLE'},
     {'name': 'bluetooth', 'type': 'FLOAT', 'mode': 'NULLABLE'},
     {'name': 'usb_port', 'type': 'FLOAT', 'mode': 'NULLABLE'},
     {'name': 'heated_seats', 'type': 'FLOAT', 'mode': 'NULLABLE'},
     {'name': 'interior_color', 'type': 'STRING', 'mode': 'NULLABLE'},
     {'name': 'exterior_color', 'type': 'STRING', 'mode': 'NULLABLE'},
-    {'name': 'price', 'type': 'FLOAT', 'mode': 'NULLABLE'},
-]
+    {'name': 'price', 'type': 'FLOAT', 'mode': 'NULLABLE'}]
 
+
+extract_load_csv_dag = DAG(
+    dag_id="transfer_csv_from_gcs_to_bigquery",
+    schedule="@daily",
+    start_date=datetime(2024, 7, 5),
+    catchup=False,
+)
+
+start_task = EmptyOperator(task_id="empty_start_task", dag = extract_load_csv_dag)
+
+
+# Define the GCS to BigQuery transfer task
 extract_load_csv_op = GCSToBigQueryOperator(
     task_id="gcs_to_bigquery_csv",
-    bucket="ready-project-dataset",
-    source_objects=["cars-com_dataset/*.csv"],
-    destination_project_dataset_table="ready-data-de24.landing_01.used_cars",
+    bucket=GCS_BUCKET,
+    source_objects=FILENAME,
+    destination_project_dataset_table=f"{BQ_PROJECT_ID}.{BQ_LANDING_DATASET_NAME}.{TABLE_NAME}",
     dag=extract_load_csv_dag,
-    schema_fields = schema_fields,
     field_delimiter=',',
-    allow_jagged_rows = True,
+    schema_fields = gcs_used_cars_schema_fields,
     ignore_unknown_values=True,
     skip_leading_rows=1,
     source_format='CSV',
-    max_bad_records=9
+    autodetect = False,
+    max_bad_records=50,
+    write_disposition = "WRITE_TRUNCATE"
 )
+
 
 end_task = EmptyOperator(task_id="empty_end_task", dag=extract_load_csv_dag)
 
