@@ -4,7 +4,7 @@ from airflow.operators.empty import EmptyOperator
 from airflow.providers.google.cloud.transfers.gcs_to_bigquery import GCSToBigQueryOperator
 
 # Define constants for BigQuery and GCS
-BQ_PROJECT_ID = 'ready-data-engineering-p24'
+BQ_PROJECT_ID = 'ready-data-de24'
 BQ_LANDING_DATASET_NAME = 'landing_01'
 GCS_BUCKET = 'ready-project-dataset'
 FILENAME = 'cars-com_dataset/*.csv'
